@@ -23,7 +23,11 @@ import datetime
 import gzip
 import os
 import re
-import urllib
+
+try:
+  from urllib import urlretrieve
+except ImportError:
+  from urllib.request import urlretrieve
 
 import tensorflow as tf
 
@@ -133,7 +137,7 @@ def download(url, download_dir):
     return outname
   inprogress = outname + '.incomplete'
   print('Downloading %s' % url)
-  inprogress, _ = urllib.urlretrieve(url, inprogress)
+  inprogress, _ = urlretrieve(url, inprogress)
   tf.gfile.Rename(inprogress, outname)
   return outname
 
