@@ -115,8 +115,8 @@ def remote_run_sequence(cmds, instance_name, detach=False, retries=1):
   """Run command on GCS instance, optionally detached.
   Sequentially processes multiple commands on the same instance.
   """
-  for cmd in cmds:
-    remote_run(cmd,  instance_name, detach=detach, retries=retries)
+  cmd_seq = "; ".join(cmds)
+  remote_run(cmd_seq,  instance_name, detach=detach, retries=retries)
 
 
 def default_zone():
@@ -204,7 +204,7 @@ def launch_instance(instance_name,
   # Run command
   tf.logging.info("Running command on %s", instance_name)
   if isinstance(command, list):
-    remote_run_sequence(command, instance_name, detach=False)
+    remote_run_sequence(command, instance_name, detach=True)
   else:
     remote_run(command, instance_name, detach=True)
 
