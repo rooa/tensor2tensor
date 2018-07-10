@@ -66,6 +66,8 @@ class WETHeader(collections.namedtuple('WETHeader', ['url', 'length'])):
     url = None
 
     line = f.readline()
+    if isinstance(line, bytes):
+      line = line.decode("utf8")
     if not line:
       # EOF
       return None
@@ -73,7 +75,8 @@ class WETHeader(collections.namedtuple('WETHeader', ['url', 'length'])):
       if line.startswith(cls.URI_HEADER):
         url = line[len(cls.URI_HEADER):].strip()
       line = f.readline()
-
+      if isinstance(line, bytes):
+        line = line.decode("utf8")
     # Consume empty separator
     f.readline()
 
