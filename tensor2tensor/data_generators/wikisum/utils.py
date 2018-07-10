@@ -42,13 +42,13 @@ except ImportError:
 
 # Each entry is a URL to the wet.paths.gz file for that CommonCrawl dump.
 WET_PATHS_BY_DATE = {
-    '0917': ('https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-39/'
-             'wet.paths.gz'),
+    '0917': (b'https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-39/'
+             b'wet.paths.gz'),
 }
 
-S3_HTTP_PREFIX = 'https://commoncrawl.s3.amazonaws.com/'
+S3_HTTP_PREFIX = b'https://commoncrawl.s3.amazonaws.com/'
 NUM_SHARDS = 1000
-METADTA_SUFFIX = '.metadata.json'
+METADTA_SUFFIX = b'.metadata.json'
 
 
 
@@ -57,8 +57,8 @@ def readahead(path):
 
 
 class WETHeader(collections.namedtuple('WETHeader', ['url', 'length'])):
-  URI_HEADER = 'WARC-Target-URI: '
-  LENGTH_HEADER = 'Content-Length: '
+  URI_HEADER = b'WARC-Target-URI: '
+  LENGTH_HEADER = b'Content-Length: '
 
   @classmethod
   def read(cls, f):
@@ -66,8 +66,6 @@ class WETHeader(collections.namedtuple('WETHeader', ['url', 'length'])):
     url = None
 
     line = f.readline()
-    if isinstance(line, bytes):
-      line = line.decode("utf8")
     if not line:
       # EOF
       return None
@@ -75,8 +73,6 @@ class WETHeader(collections.namedtuple('WETHeader', ['url', 'length'])):
       if line.startswith(cls.URI_HEADER):
         url = line[len(cls.URI_HEADER):].strip()
       line = f.readline()
-      if isinstance(line, bytes):
-        line = line.decode("utf8")
     # Consume empty separator
     f.readline()
 
@@ -149,14 +145,11 @@ def wet_download_urls(wet_paths_url, tmp_dir, rm_after=True):
   paths_gz = download(wet_paths_url, tmp_dir)
   with gzip.open(paths_gz) as f:
     path = f.readline()
-    if isinstance(path, bytes):
-        path = path.decode("utf-8")
     while path:
       download_path = S3_HTTP_PREFIX + path[:-1]
       yield download_path
       path = f.readline()
-      if isinstance(path, bytes):
-        path = path.decode("utf-8")
+
   if rm_after:
     tf.gfile.Remove(paths_gz)
 
