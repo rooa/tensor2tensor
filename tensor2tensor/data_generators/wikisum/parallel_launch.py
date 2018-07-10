@@ -59,6 +59,7 @@ FLAGS = flags.FLAGS
 
 
 flags.DEFINE_integer("num_instances", None, "Number of instances to launch.")
+flags.DEFINE_integer("num_parallel_tasks", None, "Number of parallel tasks.")
 flags.DEFINE_string("name", None, "Instance name prefix.")
 flags.DEFINE_string("log_dir", None, "GCS bucket to copy logs out to.")
 flags.DEFINE_string("code_dir", None, "Directory to copy.")
@@ -108,6 +109,14 @@ def remote_run(cmd, instance_name, detach=False, retries=1):
     except sp.CalledProcessError as e:
       if i == retries:
         raise e
+
+
+def remote_run_sequence(cmds, instance_name, detach=False, retries=1):
+  """Run command on GCS instance, optionally detached.
+  Sequentially processes multiple commands on the same instance.
+  """
+  for cmd in cmds:
+    remote_run(cmd,  instance_name, detach=detach, retries=retries)
 
 
 def default_zone():
@@ -194,7 +203,10 @@ def launch_instance(instance_name,
 
   # Run command
   tf.logging.info("Running command on %s", instance_name)
-  remote_run(command, instance_name, detach=True)
+  if isinstance(command, list):
+    remote_run_sequence(command, instance_name, detach=True)
+  else:
+    remote_run(command, instance_name, detach=True)
 
 
 def main(_):
@@ -238,23 +250,33 @@ def main(_):
     instance_ids = [int(i) for i in FLAGS.instance_ids.split(",")]
   tf.logging.info("Launching %d instances", len(instance_ids))
 
+  task_ids = list(range(FLAGS.num_parallel_tasks))
+
   for i in instance_ids:
     instance_name = "%s-%d" % (FLAGS.name, i)
     existing_ip = (vm_info[vm_names.index(instance_name)][1]
-                   if instance_name in vm_names else None)
+                  if instance_name in vm_names else None)
     logging = LOGS.format(task_id=i, bucket=log_dir) if log_dir else ""
     delete = DELETE_SELF.format(zone=zone)
     if FLAGS.debug_keep_up:
       assert len(instance_ids) == 1
       delete = ""
-    command = "{prefix} {suffix} {logging}; {delete}".format(
-        prefix=FLAGS.command_prefix,
-        suffix=suffixes[i],
-        delete=delete,
-        logging=logging)
-    args = (instance_name, command, existing_ip,
+
+    cmd_list = []
+    for t in task_ids:
+      if t % FLAGS.num_instances == i:
+        # mod to map which instance to use
+        command = "{prefix} {suffix} {logging}; {delete}".format(
+            prefix=FLAGS.command_prefix,
+            suffix=t,
+            delete=delete,
+            logging=logging)
+        cmd_list.append(command)
+
+    args = (instance_name, cmd_list, existing_ip,
             FLAGS.cpu, FLAGS.mem, code_dir,
             FLAGS.setup_command)
+
     res = pool.apply_async(launch_instance, args)
     async_results.append((res, instance_name, i))
 
