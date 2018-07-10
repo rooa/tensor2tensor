@@ -152,6 +152,8 @@ def wet_download_urls(wet_paths_url, tmp_dir, rm_after=True):
       download_path = S3_HTTP_PREFIX + path[:-1]
       yield download_path
       path = f.readline()
+      if isinstance(path, bytes):
+        path = path.decode("utf-8")
   if rm_after:
     tf.gfile.Remove(paths_gz)
 
