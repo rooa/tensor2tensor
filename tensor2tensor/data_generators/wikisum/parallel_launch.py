@@ -266,12 +266,16 @@ def main(_):
     for t in task_ids:
       if t % FLAGS.num_instances == i:
         # mod to map which instance to use
-        command = "{prefix} {suffix} {logging}; {delete}".format(
+        command = "{prefix} {suffix} {logging}".format(
             prefix=FLAGS.command_prefix,
             suffix=t,
             delete=delete,
             logging=logging)
         cmd_list.append(command)
+
+    # Finally delete the instance after all the commands.
+    # This would also enforce running remote_run_sequence all the time.
+    cmd_list.append(delete)
 
     args = (instance_name, cmd_list, existing_ip,
             FLAGS.cpu, FLAGS.mem, code_dir,

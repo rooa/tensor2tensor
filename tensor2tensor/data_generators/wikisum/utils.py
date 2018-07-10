@@ -132,10 +132,10 @@ def wet_records(wet_filepath):
 def download(url, download_dir):
   outname = os.path.join(download_dir, os.path.basename(url))
   if tf.gfile.Exists(outname):
-    print('Found %s, skipping download' % outname)
+    tf.logging.info('Found %s, skipping download' % outname)
     return outname
   inprogress = outname + '.incomplete'
-  print('Downloading %s' % url)
+  tf.logging.info('Downloading %s' % url)
   inprogress, _ = urlretrieve(url, inprogress)
   tf.gfile.Rename(inprogress, outname)
   return outname
@@ -152,6 +152,7 @@ def wet_download_urls(wet_paths_url, tmp_dir, rm_after=True):
 
   if rm_after:
     tf.gfile.Remove(paths_gz)
+    tf.logging.info("Deleted {}".format(paths_gz))
 
 
 def wet_records_from_url(download_url, tmp_dir, rm_after=True):
