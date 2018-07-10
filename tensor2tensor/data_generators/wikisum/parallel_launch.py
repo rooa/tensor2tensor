@@ -204,7 +204,7 @@ def launch_instance(instance_name,
   # Run command
   tf.logging.info("Running command on %s", instance_name)
   if isinstance(command, list):
-    remote_run_sequence(command, instance_name, detach=True)
+    remote_run_sequence(command, instance_name, detach=False)
   else:
     remote_run(command, instance_name, detach=True)
 
