@@ -146,6 +146,8 @@ def wet_download_urls(wet_paths_url, tmp_dir, rm_after=True):
   paths_gz = download(wet_paths_url, tmp_dir)
   with gzip.open(paths_gz) as f:
     path = f.readline()
+    if isinstance(path, bytes):
+        path = path.decode("utf-8")
     while path:
       download_path = S3_HTTP_PREFIX + path[:-1]
       yield download_path
