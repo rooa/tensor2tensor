@@ -43,7 +43,7 @@ def aggregate_stats(stats_files):
   for fname in stats_files:
     with tf.gfile.Open(fname) as f:
       stats = json.loads(f.read())
-      for k, v in stats.iteritems():
+      for k, v in stats.items():
         if k not in all_stats:
           if isinstance(v, list):
             all_stats[k] = []
