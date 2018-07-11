@@ -82,9 +82,9 @@ def aggregate_stats(stats_files):
       wikis_skipped_no_ref=wikis_skipped_no_ref,
       wikis_skipped_no_lead=wikis_skipped_no_lead,
       overall_ref_coverage=ref_coverage,
-      per_wiki_ref_coverage_dist=list((coverage_dist * 100).astype(int)),
-      per_wiki_ref_coverage_bounds=list((coverage_bounds * 100).astype(int)),
-      ref_len_dist=list((len_dist * 100).astype(int)),
+      per_wiki_ref_coverage_dist=map(int, list((coverage_dist * 100))),
+      per_wiki_ref_coverage_bounds=map(int, list((coverage_bounds * 100))),
+      ref_len_dist=map(int, list((len_dist * 100))),
       ref_len_bounds=list(len_bounds),
   )
   return agg_stats
